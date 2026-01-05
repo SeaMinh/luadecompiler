@@ -1,22 +1,24 @@
 "use client";
 import React, { useState, useRef } from "react";
+import { Play, Upload, Copy, Download, Code2 } from "lucide-react";
 
 export default function LuaDecompiler() {
   const [inputCode, setInputCode] = useState("");
   const [outputCode, setOutputCode] = useState("");
+  const [isDecompiling, setIsDecompiling] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Hàm xử lý khi bấm nút Run (Giả lập Decompiler)
   const handleRun = () => {
-    if (!inputCode.trim()) {
-      alert("Vui lòng nhập bytecode!");
-      return;
-    }
-    // Chỗ này bạn sẽ gọi logic decompile thực tế hoặc API
-    setOutputCode(`-- Decompiled Result --\nfunction hello()\n  print("Hello from Decompiler!")\nend\n\n${inputCode}`);
+    if (!inputCode.trim()) return;
+    setIsDecompiling(true);
+    
+    // Giả lập quá trình giải mã trong 800ms
+    setTimeout(() => {
+      setOutputCode(`-- Decompiled by Lua Tool\n-- Timestamp: ${new Date().toLocaleString()}\n\nlocal function main()\n    print("Hello World")\n    for i=1, 10 do\n        print("Counting: " .. i)\n    end\nend\n\nmain()`);
+      setIsDecompiling(false);
+    }, 800);
   };
 
-  // Upload file và đọc nội dung
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -26,91 +28,100 @@ export default function LuaDecompiler() {
     }
   };
 
-  // Copy nội dung bên phải
-  const handleCopy = () => {
+  const copyToClipboard = () => {
     navigator.clipboard.writeText(outputCode);
-    alert("Đã copy vào bộ nhớ tạm!");
-  };
-
-  // Download nội dung bên phải thành file .lua
-  const handleDownload = () => {
-    const element = document.createElement("a");
-    const file = new Blob([outputCode], { type: "text/plain" });
-    element.href = URL.createObjectURL(file);
-    element.download = "decompiled_script.lua";
-    document.body.appendChild(element);
-    element.click();
+    alert("Đã sao chép vào bộ nhớ tạm!");
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white p-4">
+    <div className="flex flex-col h-screen max-h-screen bg-gray-950 text-gray-200">
       {/* Header */}
-      <header className="mb-4">
-        <h1 className="text-2xl font-bold text-blue-400">LUA DECOMPILER</h1>
-      </header>
+      <nav className="flex items-center justify-between px-6 py-3 border-b border-gray-800 bg-gray-900/50">
+        <div className="flex items-center gap-2">
+          <Code2 className="text-blue-500" />
+          <span className="font-bold tracking-wider text-xl">LUA <span className="text-blue-500">DECOMPILER</span></span>
+        </div>
+        <div className="text-xs text-gray-500 font-mono">v1.0.0-stable</div>
+      </nav>
 
-      {/* Main Content: Hai khung chia đôi */}
-      <main className="flex flex-1 gap-4 overflow-hidden">
+      {/* Toolbar & Editors */}
+      <main className="flex flex-1 overflow-hidden p-4 gap-4">
         
-        {/* Khung bên trái: Nhập liệu */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex gap-2 mb-2">
-            <button 
-              onClick={handleRun}
-              className="bg-green-600 hover:bg-green-700 px-4 py-1 rounded font-bold transition"
-            >
-              RUN
-            </button>
-            <button 
-              onClick={() => fileInputRef.current.click()}
-              className="bg-gray-700 hover:bg-gray-600 px-4 py-1 rounded transition"
-            >
-              Upload File
-            </button>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileUpload} 
-              className="hidden" 
-            />
+        {/* CỘT TRÁI */}
+        <div className="flex-1 flex flex-col min-w-0 bg-gray-900 rounded-lg border border-gray-800 shadow-2xl">
+          <div className="p-2 border-b border-gray-800 flex justify-between items-center bg-gray-800/30">
+            <span className="text-xs font-semibold px-3 text-gray-400 uppercase tracking-widest">Input (Bytecode)</span>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => fileInputRef.current.click()}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 active:scale-95 transition-all rounded shadow-md"
+              >
+                <Upload size={14} /> Upload
+              </button>
+              <button 
+                onClick={handleRun}
+                disabled={isDecompiling}
+                className={`flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded shadow-md transition-all active:scale-95 ${
+                  isDecompiling ? "bg-gray-600 cursor-not-allowed" : "bg-green-600 hover:bg-green-500 text-white"
+                }`}
+              >
+                <Play size={14} fill="currentColor" /> {isDecompiling ? "RUNNING..." : "RUN"}
+              </button>
+            </div>
           </div>
+          <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
           <textarea
-            className="flex-1 w-full p-4 bg-gray-800 border border-gray-700 rounded font-mono text-sm resize-none overflow-auto whitespace-pre"
-            placeholder="Dán Lua Bytecode vào đây..."
+            className="flex-1 p-4 bg-transparent font-mono text-sm outline-none resize-none overflow-auto whitespace-pre custom-scrollbar"
+            placeholder="Paste your Lua bytecode here..."
             value={inputCode}
             onChange={(e) => setInputCode(e.target.value)}
-            wrap="off" // Quan trọng để kéo ngang thay vì xuống dòng
+            wrap="off"
+            spellCheck="false"
           />
         </div>
 
-        {/* Khung bên phải: Kết quả */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex gap-2 mb-2">
-            <button 
-              onClick={handleCopy}
-              className="bg-blue-600 hover:bg-blue-700 px-4 py-1 rounded transition"
-            >
-              Copy
-            </button>
-            <button 
-              onClick={handleDownload}
-              className="bg-purple-600 hover:bg-purple-700 px-4 py-1 rounded transition"
-            >
-              Download
-            </button>
+        {/* CỘT PHẢI */}
+        <div className="flex-1 flex flex-col min-w-0 bg-gray-900 rounded-lg border border-gray-800 shadow-2xl">
+          <div className="p-2 border-b border-gray-800 flex justify-between items-center bg-gray-800/30">
+            <span className="text-xs font-semibold px-3 text-gray-400 uppercase tracking-widest">Output (Source)</span>
+            <div className="flex gap-2">
+              <button 
+                onClick={copyToClipboard}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 active:scale-95 transition-all rounded shadow-md"
+              >
+                <Copy size={14} /> Copy
+              </button>
+              <button 
+                onClick={() => {
+                  const blob = new Blob([outputCode], { type: "text/plain" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "decompiled.lua";
+                  a.click();
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all rounded shadow-md text-white"
+              >
+                <Download size={14} /> Download
+              </button>
+            </div>
           </div>
           <textarea
-            className="flex-1 w-full p-4 bg-gray-800 border border-gray-700 rounded font-mono text-sm text-green-400 resize-none overflow-auto whitespace-pre"
-            placeholder="Kết quả sẽ hiển thị ở đây..."
+            className="flex-1 p-4 bg-transparent font-mono text-sm outline-none resize-none overflow-auto whitespace-pre text-green-400 custom-scrollbar"
             value={outputCode}
             readOnly
-            wrap="off" // Quan trọng để kéo ngang
+            wrap="off"
+            placeholder="Decompiled code will appear here..."
+            spellCheck="false"
           />
         </div>
+
       </main>
 
-      <footer className="mt-4 text-gray-500 text-xs text-center">
-        Powered by Next.js & Vercel
+      {/* Footer */}
+      <footer className="px-6 py-2 border-t border-gray-800 text-[10px] text-gray-600 flex justify-between">
+        <div>Ready to decompile</div>
+        <div>UTF-8 | Lua 5.1/5.3/5.4 Support</div>
       </footer>
     </div>
   );
