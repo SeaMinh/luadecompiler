@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { Play, Copy, Download, Upload, Cpu, Code } from "lucide-react";
-import { fullDecompile } from "@/utils/luaDecompiler";
+import { fullDecompile } from "../utils/luaDecompiler";
 
 export default function App() {
   const [input, setInput] = useState("");
