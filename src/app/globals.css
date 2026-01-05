@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tùy chỉnh thanh cuộn cho các khung nhập liệu */
+textarea::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+textarea::-webkit-scrollbar-track {
+  background: #111827;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 5px;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
